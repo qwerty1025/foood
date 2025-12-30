@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>假日農場 V3.5 - 冠軍課程版</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
+  <style>
+    body { font-family: 'Zen Maru Gothic', sans-serif; background-color: #fffbeb; } /* 淺米色背景 */
+    
+    /* 老師代表色 */
+    .theme-orange { --bg: #ffedd5; --bar: #f97316; --text: #9a3412; --border: #fed7aa; }
+    .theme-yellow { --bg: #fef9c3; --bar: #eab308; --text: #854d0e; --border: #fde047; }
+    .theme-blue   { --bg: #dbeafe; --bar: #3b82f6; --text: #1e40af; --border: #bfdbfe; }
+    .theme-green  { --bg: #dcfce7; --bar: #22c55e; --text: #166534; --border: #bbf7d0; }
+    .theme-red    { --bg: #ffe4e6; --bar: #f43f5e; --text: #9f1239; --border: #fecdd3; }
+    .theme-purple { --bg: #f3e8ff; --bar: #a855f7; --text: #6b21a8; --border: #d8b4fe; }
+
+    /* 冠軍課程特效 (Gold Style) */
+    .champion-card {
+      background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+      border: 2px solid #fbbf24;
+      box-shadow: 0 4px 6px -1px rgba(245, 158, 11, 0.1), 0 2px 4px -1px rgba(245, 158, 11, 0.06);
+    }
+    .champion-badge {
+      background: linear-gradient(to right, #f59e0b, #d97706);
+      color: white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .teacher-card {
+      background-color: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    
+    /* 導航按鈕激活狀態 */
+    .nav-active {
+      background-color: #fff7ed;
+      color: #ea580c;
+      border-bottom: 3px solid #ea580c;
+    }
+  </style>
+</head>
+<body>
+
+<div id="app" class="pb-24 min-h-screen flex flex-col">
+
+  <header class="bg-amber-400 p-4 shadow-md sticky top-0 z-50">
+    <div class="max-w-4xl mx-auto flex justify-between items-center">
+      <div class="font-bold text-amber-900 text-lg flex items-center gap-2 cursor-pointer" @click="goHome">
+        <i class="fa-solid fa-cow text-xl"></i> 假日農場 V3.5
+      </div>
+      <div v-if="bookingStep > 0" class="text-xs font-bold text-white bg-amber-600 px-3 py-1 rounded-full animate-pulse">
+        報名中...
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 w-full max-w-4xl mx-auto p-4">
+
+    <div v-if="bookingStep === 0">
+      
+      <div class="bg-white shadow-md rounded-xl mb-6 sticky top-20 z-40 overflow-hidden flex text-center">
+        <button @click="viewMode = 'psych'" :class="viewMode === 'psych' ? 'nav-active' : 'text-gray-500 hover:bg-gray-50'" class="flex-1 py-3 font-bold text-sm transition flex flex-col items-center gap-1 border-r border-gray-100">
+          <i class="fa-solid fa-wand-magic-sparkles text-lg"></i> 測驗推薦
+        </button>
+        <button @click="viewMode = 'teachers'" :class="viewMode === 'teachers' ? 'nav-active' : 'text-gray-500 hover:bg-gray-50'" class="flex-1 py-3 font-bold text-sm transition flex flex-col items-center gap-1 border-r border-gray-100">
+          <i class="fa-solid fa-users text-lg"></i> 認識老師
+        </button>
+        <button @click="viewMode = 'overview'" :class="viewMode === 'overview' ? 'nav-active' : 'text-gray-500 hover:bg-gray-50'" class="flex-1 py-3 font-bold text-sm transition flex flex-col items-center gap-1 border-r border-gray-100">
+          <i class="fa-solid fa-calendar-days text-lg"></i> 總覽
+        </button>
+        <button @click="viewMode = 'grid'" :class="viewMode === 'grid' ? 'nav-active' : 'text-gray-500 hover:bg-gray-50'" class="flex-1 py-3 font-bold text-sm transition flex flex-col items-center gap-1">
+          <i class="fa-solid fa-list-check text-lg"></i> 找課
+        </button>
+      </div>
+
+      <div v-if="viewMode === 'psych'" class="animate__animated animate__fadeIn">
+        <div class="w-full bg-white rounded-3xl shadow-xl border-4 border-amber-300 min-h-[450px] overflow-hidden relative flex flex-col">
+          
+          <div v-if="psychStep === 0" class="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-6 bg-amber-50/50">
+            <div class="text-7xl animate-bounce drop-shadow-sm">🔮</div>
+            <div>
+              <h3 class="text-3xl font-black text-amber-800 mb-2">測出你的<br>本命農夫老師</h3>
+              <p class="text-amber-700/70 text-sm font-bold">不知道怎麼選課嗎？<br>玩個小遊戲，找出最適合孩子的玩法！</p>
+            </div>
+            <button @click="psychStep = 1" class="bg-gradient-to-r from-orange-500 to-amber-500 text-white px-10 py-4 rounded-full font-bold shadow-lg hover:scale-105 transition text-lg tracking-wider">
+              開始測驗 <i class="fa-solid fa-play ml-2 text-xs"></i>
+            </button>
+          </div>
+
+          <div v-if="psychStep === 1" class="h-full flex flex-col p-8 animate__animated animate__fadeInRight">
+            <div class="text-xs font-bold text-orange-400 mb-4 uppercase tracking-widest">Question 1 / 2</div>
+            <h3 class="text-2xl font-bold text-gray-800 mb-8 leading-snug">平常週末，<br>孩子最喜歡...</h3>
+            <div class="space-y-4">
+              <button @click="answerQ1('active')" class="w-full p-5 rounded-2xl bg-white border-2 border-orange-100 hover:border-orange-400 shadow-sm text-left transition flex items-center gap-4 group">
+                <span class="text-3xl group-hover:scale-110 transition">🏃</span> <span class="font-bold text-gray-700">在公園跑跑跳跳，放電第一！</span>
+              </button>
+              <button @click="answerQ1('calm')" class="w-full p-5 rounded-2xl bg-white border-2 border-blue-100 hover:border-blue-400 shadow-sm text-left transition flex items-center gap-4 group">
+                <span class="text-3xl group-hover:scale-110 transition">🔍</span> <span class="font-bold text-gray-700">蹲在地上觀察螞蟻，充滿好奇。</span>
+              </button>
+            </div>
+          </div>
+          
+          <div v-if="psychStep === 2" class="h-full flex flex-col p-8 animate__animated animate__fadeInRight">
+             <div class="text-xs font-bold text-orange-400 mb-4">Question 2 / 2</div>
+             <h3 class="text-2xl font-bold text-gray-800 mb-8">關於食物...</h3>
+             <div class="space-y-4">
+              <button @click="answerQ2('food')" class="w-full p-5 rounded-2xl bg-white border-2 border-yellow-100 hover:border-yellow-400 shadow-sm text-left transition flex items-center gap-4">
+                <span class="text-3xl">😋</span> <span class="font-bold text-gray-700">小小美食家，什麼都想吃一口！</span>
+              </button>
+              <button @click="answerQ2('nature')" class="w-full p-5 rounded-2xl bg-white border-2 border-green-100 hover:border-green-400 shadow-sm text-left transition flex items-center gap-4">
+                <span class="text-3xl">🌿</span> <span class="font-bold text-gray-700">比起吃，更喜歡玩泥土和樹葉。</span>
+              </button>
+            </div>
+          </div>
+
+          <div v-if="psychStep === 3" class="h-full flex flex-col p-6 text-center animate__animated animate__zoomIn">
+            <div class="text-sm font-bold text-gray-400 mb-2">✨ 測驗結果 ✨</div>
+            
+            <div :class="getTeacherTheme(psychResult.name)" class="teacher-card rounded-3xl p-6 mb-6 shadow-inner relative overflow-hidden">
+               <div class="absolute -right-4 -top-4 text-9xl opacity-10">{{ psychResult.icon }}</div>
+               <div class="text-7xl mb-3 relative z-10">{{ psychResult.icon }}</div>
+               <h2 class="text-3xl font-black mb-1 relative z-10">{{ psychResult.name }} 老師</h2>
+               <div class="inline-block bg-white/50 px-3 py-1 rounded-full text-sm font-bold mb-4 backdrop-blur-sm">#{{ psychResult.tagline }}</div>
+               <p class="text-xs font-bold opacity-80 leading-relaxed">{{ psychResult.desc }}</p>
+            </div>
+
+            <div v-if="getClassesByTeacher(psychResult.name)[0]" class="mb-4">
+               <button @click="startBooking(getClassesByTeacher(psychResult.name)[0])" class="w-full bg-gradient-to-r from-orange-500 to-amber-500 text-white py-4 rounded-xl font-bold shadow-lg animate-pulse hover:shadow-xl transition text-lg">
+                 👉 預約體驗課
+               </button>
+            </div>
+             <button @click="psychStep = 0" class="text-gray-400 text-sm underline">重新測驗</button>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="viewMode === 'teachers'" class="animate__animated animate__fadeIn">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div v-for="(tData, name) in teachersDB" :key="name" class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col items-center text-center relative overflow-hidden group hover:shadow-md transition">
+            
+            <div :class="getTeacherTheme(name)" class="teacher-card absolute top-0 left-0 w-full h-24 opacity-30"></div>
+            
+            <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center text-4xl shadow-md z-10 mb-3 group-hover:scale-110 transition">
+              {{ tData.icon }}
+            </div>
+            
+            <h3 class="font-bold text-xl text-gray-800">{{ name }} 老師</h3>
+            <span class="text-xs text-orange-500 font-bold mb-2">{{ tData.psych.tagline }}</span>
+            <p class="text-xs text-gray-500 leading-relaxed mb-4 px-2">{{ tData.question }} 老師會帶領小朋友尋找答案喔！</p>
+            
+            <button @click="filterByTeacher(name)" class="w-full py-2 rounded-lg bg-gray-100 text-gray-600 font-bold text-sm hover:bg-orange-500 hover:text-white transition">
+              查看課程
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="viewMode === 'overview'" class="space-y-6 animate__animated animate__fadeIn">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+           <div class="bg-orange-50 p-3 text-center border-b border-orange-100">
+             <h2 class="font-bold text-orange-800">📅 一月份 (週末表)</h2>
+           </div>
+           
+           <div class="grid grid-cols-3 divide-x divide-y divide-gray-100">
+            <template v-for="week in getWeeks(1)" :key="week.id">
+              <div v-for="d in ['fri','sat','sun']" class="min-h-[120px] p-1.5 relative">
+                <div v-if="week[d]" class="h-full flex flex-col">
+                  <div class="text-sm font-bold text-gray-600 mb-2 text-center">{{ week[d].day }}</div>
+                  
+                  <div class="space-y-2 flex-1">
+                    <div v-for="cls in getClassesForDate(1, week[d].day)" :key="cls.id" 
+                         @click="startBooking(cls)"
+                         :class="[
+                           isFull(cls) ? 'champion-card' : getTeacherTheme(cls.teacherName), 
+                           'rounded-lg p-1.5 transition relative overflow-hidden cursor-pointer hover:scale-105 shadow-sm'
+                         ]">
+                       
+                       <div v-if="isFull(cls)" class="absolute -right-6 top-3 bg-yellow-400 text-amber-900 text-[9px] font-black px-6 py-0.5 rotate-45 shadow-sm z-20">
+                         CHAMPION
+                       </div>
+                       <div v-if="isFull(cls)" class="absolute -top-1 -left-1 text-xl z-20 drop-shadow-sm">👑</div>
+
+                       <div class="flex justify-between items-center text-[10px] font-bold mb-1 relative z-10">
+                         <span :class="isFull(cls) ? 'text-amber-900' : ''">{{ cls.icon }} {{ cls.teacherName }}</span>
+                         <span v-if="!isFull(cls)" class="opacity-80">{{ cls.venue }}場</span>
+                       </div>
+                       
+                       <div v-if="isFull(cls)" class="text-center font-black text-amber-600 text-[10px] py-1 bg-white/40 rounded mt-1">
+                         人氣冠軍 (額滿)
+                       </div>
+                       <div v-else class="w-full bg-white/50 rounded-full h-1.5 overflow-hidden">
+                         <div class="teacher-bar h-full rounded-full" :style="{width: (cls.booked/cls.capacity*100)+'%'}"></div>
+                       </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </template>
+           </div>
+        </div>
+      </div>
+
+      <div v-else-if="viewMode === 'grid'" class="grid grid-cols-1 md:grid-cols-2 gap-4 animate__animated animate__fadeIn">
+          <div v-for="cls in explodedClasses" :key="cls.id" 
+               class="bg-white rounded-2xl p-4 shadow-sm border flex flex-col justify-between hover:shadow-lg transition relative overflow-hidden"
+               :class="isFull(cls) ? 'border-yellow-400 ring-2 ring-yellow-100' : 'border-gray-100'">
+            
+            <div v-if="isFull(cls)" class="absolute top-0 right-0 w-32 h-32 bg-yellow-100 rounded-full -mr-16 -mt-16 opacity-50 z-0"></div>
+            
+            <div class="flex justify-between items-start mb-3 relative z-10">
+              <div class="flex flex-col items-center bg-gray-50 rounded-lg p-2 min-w-[60px]">
+                <span class="text-xs font-bold text-gray-500">{{ cls.month }}/{{ cls.day }}</span>
+                <span class="text-lg font-black text-gray-800">{{ cls.weekDay }}</span>
+              </div>
+              
+              <div class="flex flex-col items-end gap-1">
+                <span v-if="isFull(cls)" class="champion-badge text-xs px-2 py-1 rounded font-bold flex items-center">
+                  <i class="fa-solid fa-crown mr-1 text-yellow-200"></i> 人氣冠軍
+                </span>
+                <span v-else class="bg-green-100 text-green-600 text-xs px-2 py-1 rounded font-bold">熱報中</span>
+              </div>
+            </div>
+
+            <div class="mb-4 relative z-10 flex items-center gap-3">
+              <div class="text-3xl bg-gray-50 rounded-full w-12 h-12 flex items-center justify-center shadow-sm">
+                {{ cls.icon }}
+              </div>
+              <div>
+                <h3 class="font-bold text-gray-800 text-lg">{{ cls.teacherName }} 老師</h3>
+                <p class="text-xs text-gray-500">{{ cls.time }} | {{ cls.venue }}場地</p>
+              </div>
+            </div>
+
+            <button 
+              @click="startBooking(cls)"
+              :class="isFull(cls) ? 'bg-gradient-to-r from-yellow-400 to-yellow-500 text-white shadow-yellow-200' : 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-orange-200'"
+              class="w-full py-3 rounded-xl font-bold shadow-md transform active:scale-95 transition flex justify-center items-center relative z-10">
+              <span v-if="isFull(cls)">🏆 登記候補 (冠軍滿額)</span>
+              <span v-else>👉 我要報名</span>
+            </button>
+          </div>
+      </div>
+
+    </div>
+
+    <div v-if="bookingStep > 0" class="bg-white rounded-2xl shadow-lg p-6 max-w-2xl mx-auto mt-4">
+       <div class="text-center">
+         <h3 class="font-bold text-xl mb-2">填寫報名表</h3>
+         <p class="text-gray-500 text-sm mb-4">預約：{{ selectedClass.teacherName }} 老師 - {{ selectedClass.date }}</p>
+         <button @click="bookingStep=0" class="text-gray-400 underline">取消 (Demo 結束)</button>
+       </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  const { createApp, ref, computed } = Vue;
+
+  createApp({
+    setup() {
+      // 1. 初始化設定：預設首頁為測驗 (psych)
+      const viewMode = ref('psych');
+      const bookingStep = ref(0);
+      const selectedClass = ref(null);
+      const psychStep = ref(0);
+      const psychResult = ref({});
+
+      // 老師資料
+      const teachersDB = {
+        '薏仁': { icon: '🌾', theme: 'theme-orange', question: '薏仁消水腫？', psych: {tagline:'溫暖系守護者', desc:'適合有點害羞但喜歡美食的孩子，老師會用故事引導他們嘗試新事物！'} },
+        '蜂蜜': { icon: '🍯', theme: 'theme-yellow', question: '蜜蜂找花蜜？', psych: {tagline:'甜蜜系觀察家', desc:'適合觀察力敏銳的孩子，一起探索微觀的昆蟲世界！'} },
+        '阿順': { icon: '🥛', theme: 'theme-blue',   question: '羊奶好吸收？', psych: {tagline:'活力系冒險家', desc:'適合精力充沛的孩子，在 B 場地盡情奔跑與動物互動！'} },
+        '君韡': { icon: '🍄', theme: 'theme-green',  question: '菇菇不曬太陽？', psych: {tagline:'博學系小博士', desc:'適合喜歡問「為什麼」的孩子，這裡有滿滿的知識等著他！'} },
+        '廷宏': { icon: '🪱', theme: 'theme-red',    question: '蚯蚓是好農夫？', psych: {tagline:'泥土系探險家', desc:'適合不怕髒、喜歡挖土的孩子，一起當個小小土壤醫生！'} },
+        '瑋恩': { icon: '🥬', theme: 'theme-purple', question: '蟲蟲愛吃菜？',   psych: {tagline:'健康系小農夫', desc:'適合喜歡動手做的孩子，體驗親手採摘的成就感！'} },
+        '昌宏': { icon: '🌾', theme: 'theme-orange', question: '薏仁消水腫？', psych: {tagline:'溫暖系守護者', desc:'適合有點害羞但喜歡美食的孩子！'} },
+      };
+
+      // 模擬資料 (刻意製造一個額滿的)
+      const rawScheduleData = [
+        { m:1, d:3,  w:'六', t:'AM', v:'B', n:'阿順', cap:15, bk:15 }, // 滿 (冠軍!)
+        { m:1, d:3,  w:'六', t:'AM', v:'A', n:'君韡', cap:20, bk:10 },
+        { m:1, d:3,  w:'六', t:'AM', v:'A', n:'廷宏', cap:20, bk:18 },
+        { m:1, d:4,  w:'日', t:'AM', v:'B', n:'瑋恩', cap:15, bk:5 },
+      ];
+
+      const explodedClasses = computed(() => {
+        return rawScheduleData.map((item, index) => ({
+          id: `C${index}`,
+          month: item.m,
+          day: item.d,
+          weekDay: item.w,
+          time: '09:00 - 12:00',
+          venue: item.v,
+          teacherName: item.n,
+          icon: teachersDB[item.n]?.icon,
+          capacity: item.cap,
+          booked: item.bk
+        }));
+      });
+
+      // Helpers
+      const getTeacherTheme = (n) => teachersDB[n]?.theme || 'theme-orange';
+      const isFull = (cls) => cls.booked >= cls.capacity;
+      
+      // 測驗邏輯 (簡化版)
+      const answerQ1 = () => psychStep.value = 2;
+      const answerQ2 = (ans) => {
+        const resultName = ans === 'food' ? '薏仁' : '阿順';
+        psychResult.value = { name: resultName, ...teachersDB[resultName] };
+        psychStep.value = 3;
+      };
+
+      const filterByTeacher = (name) => {
+        viewMode.value = 'grid';
+        // 實際專案應加上 filter 邏輯
+        alert('正在篩選 ' + name + ' 老師的課程...');
+      };
+
+      // 為了 Demo 方便的 Calendar Helper
+      const getWeeks = (m) => [{ id: 'w1', fri: null, sat: {day:3}, sun: {day:4} }];
+      const getClassesForDate = (m, d) => explodedClasses.value.filter(c => c.month===m && c.day===d);
+      const getClassesByTeacher = (n) => explodedClasses.value.filter(c => c.teacherName===n);
+      
+      const startBooking = (cls) => { selectedClass.value = cls; bookingStep.value = 1; window.scrollTo({top:0, behavior:'smooth'}); };
+      const goHome = () => { bookingStep.value = 0; viewMode.value = 'psych'; psychStep.value = 0; };
+
+      return {
+        viewMode, bookingStep, selectedClass, psychStep, psychResult,
+        teachersDB, explodedClasses,
+        getTeacherTheme, isFull, getWeeks, getClassesForDate, getClassesByTeacher,
+        startBooking, goHome, answerQ1, answerQ2, filterByTeacher
+      };
+    }
+  }).mount('#app');
+</script>
+</body>
+</html>
